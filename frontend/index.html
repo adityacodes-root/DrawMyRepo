@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>DrawMyRepo</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700;800&family=Plus+Jakarta_Sans:wght@400;500;600;700&family=Caveat:wght@400;700&family=Quicksand:wght@400;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-fixed": "#f2e580",
+                        "inverse-on-surface": "#9e9d98",
+                        "on-error": "#ffffff",
+                        "tertiary-dim": "#4f596a",
+                        "error-dim": "#9f0519",
+                        "secondary": "#6f650a",
+                        "tertiary-fixed-dim": "#c5cfe3",
+                        "surface-variant": "#eae8e2",
+                        "on-tertiary-fixed-variant": "#4e5869",
+                        "on-secondary-fixed-variant": "#665c00",
+                        "on-primary": "#ffffff",
+                        "primary": "#0066b6",
+                        "outline": "#82807c",
+                        "secondary-dim": "#625900",
+                        "on-tertiary-fixed": "#323c4c",
+                        "error": "#c0262d",
+                        "surface": "#fffcf7",
+                        "surface-container-low": "#fcf9f4",
+                        "surface-container-highest": "#eae8e2",
+                        "on-tertiary": "#ffffff",
+                        "primary-dim": "#0059a1",
+                        "tertiary-fixed": "#d3ddf2",
+                        "on-secondary-fixed": "#474000",
+                        "primary-fixed": "#64a8fe",
+                        "inverse-primary": "#64a8fe",
+                        "on-surface": "#383835",
+                        "on-surface-variant": "#656461",
+                        "on-tertiary-container": "#454f5f",
+                        "surface-bright": "#fffcf7",
+                        "outline-variant": "#bbb9b4",
+                        "tertiary": "#5b6576",
+                        "on-secondary-container": "#5b5300",
+                        "inverse-surface": "#0e0e0c",
+                        "surface-tint": "#0066b6",
+                        "on-background": "#383835",
+                        "secondary-fixed-dim": "#e4d674",
+                        "error-container": "#fb5151",
+                        "surface-container-high": "#f0eee8",
+                        "on-primary-container": "#00284e",
+                        "surface-dim": "#e4e2dc",
+                        "primary-container": "#64a8fe",
+                        "primary-fixed-dim": "#559bef",
+                        "on-primary-fixed": "#000613",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#f6f3ee",
+                        "background": "#fffcf7",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#00315d",
+                        "on-error-container": "#570008",
+                        "tertiary-container": "#d3ddf2",
+                        "secondary-container": "#f2e580"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Epilogue"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Epilogue"],
+                        "handwritten": ["Caveat"],
+                        "clean": ["Quicksand"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .sketch-border {
+            border: 2px solid #383835;
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+        }
+
+        .sketch-underline {
+            border-bottom: 3px solid #0066b6;
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+        }
+
+        .marker-highlight {
+            background: #f2e580;
+            border-radius: 2% 6% 5% 4% / 1% 1% 2% 4%;
+            box-shadow: 2px 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .ink-splatter {
+            background-color: #383835;
+            border-radius: 50%;
+            filter: blur(1px);
+            opacity: 0.8;
+        }
+
+        body {
+            background-color: #fffcf7;
+            background-image: radial-gradient(#bbb9b4 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body class="text-on-surface font-body selection:bg-secondary-container">
+    <header class="bg-[#fffcf7] border-b-2 border-stone-200/40 top-0 sticky z-50">
+        <div class="flex justify-between items-center px-6 py-4 w-full max-w-7xl mx-auto">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-blue-600" data-icon="gesture">gesture</span>
+                <h1 class="font-['Epilogue'] font-bold -rotate-1 text-2xl tracking-tight text-blue-700 italic">DrawMyRepo</h1>
+            </div>
+            <div class="hidden md:flex items-center gap-6">
+                <span id="nav-visualizer"
+                    class="text-blue-700 font-bold cursor-pointer hover:bg-blue-50 transition-transform hover:-rotate-1 px-2 py-1 rounded">Visualizer</span>
+                <span id="nav-history"
+                    class="text-stone-600 cursor-pointer hover:bg-blue-50 transition-transform hover:-rotate-1 px-2 py-1 rounded">History</span>
+            </div>
+        </div>
+    </header>
+    <main class="max-w-md mx-auto px-6 py-10 relative overflow-hidden" style="max-width: 900px;">
+        <div class="absolute top-20 -left-4 w-3 h-3 ink-splatter opacity-20"></div>
+        <div class="absolute top-40 -right-2 w-2 h-2 ink-splatter opacity-10"></div>
+        <div class="absolute bottom-20 left-10 opacity-30">
+            <span class="material-symbols-outlined text-3xl" data-icon="star">star</span>
+        </div>
+
+        <div class="text-center mb-10 -rotate-1">
+            <h2 class="font-handwritten text-5xl font-bold text-on-surface mb-2">DrawMyRepo</h2>
+            <p class="font-clean text-on-surface-variant font-semibold">Sketch your codebase architecture.</p>
+        </div>
+
+        <div id="history-section" style="display:none;" class="mb-12 w-full fade-in">
+            <h2 class="font-handwritten text-4xl font-bold text-on-surface mb-6 -rotate-1">Previous Analyses</h2>
+            <div id="history-list" class="space-y-4"></div>
+        </div>
+
+        <div id="visualizer-section">
+        <div class="mb-4 relative">
+            <div class="sketch-border p-1 bg-surface-container-lowest rotate-1 shadow-sm mb-4">
+                <input id="repo-url"
+                    class="w-full border-none focus:ring-0 font-clean text-lg p-4 bg-transparent placeholder:text-outline-variant"
+                    placeholder="https://github.com/user/repo/tree/master/backend" type="text" />
+            </div>
+            <div class="sketch-border p-1 bg-surface-container-lowest -rotate-1 shadow-sm mb-4">
+                <select id="arch-mode"
+                    class="w-full border-none focus:ring-0 font-clean text-lg p-4 bg-transparent placeholder:text-outline-variant appearance-none cursor-pointer">
+                    <option value="default">Default Architecture</option>
+                    <option value="simple">Simple (Beginner Friendly)</option>
+                    <option value="technical">Technical (Senior Engineer)</option>
+                </select>
+            </div>
+            <div class="absolute -bottom-8 right-12 opacity-40">
+                <span class="material-symbols-outlined text-4xl rotate-90"
+                    data-icon="arrow_right_alt">arrow_right_alt</span>
+            </div>
+            <button id="generate-btn"
+                class="w-full mt-6 marker-highlight py-4 px-6 font-handwritten text-2xl font-bold text-on-secondary-container hover:scale-[0.98] transition-transform active:rotate-1">
+                Generate Diagram
+            </button>
+        </div>
+
+        <div id="loading" style="display:none;"
+            class="marker-highlight p-4 mt-4 font-clean text-on-secondary-container mb-6 rotate-1">
+            Cloning, dynamically analyzing context files, and generating logic... This may take a moment!
+        </div>
+        <div id="error" style="display:none;"
+            class="bg-error-container text-white p-4 mt-4 rounded-lg font-clean mb-6 shadow-sm -rotate-1"></div>
+
+        <div class="flex gap-4 mb-10 px-2 mt-4" id="toolbar" style="opacity: 1;">
+            <button id="copy-btn"
+                class="flex-1 border-2 border-on-surface/40 rounded-lg py-2 px-3 font-handwritten text-xl flex items-center justify-center gap-2 -rotate-1 hover:bg-surface-variant transition-colors">
+                <span class="material-symbols-outlined text-xl" data-icon="content_copy">content_copy</span>
+                Copy Mermaid
+            </button>
+            <button id="download-btn"
+                class="flex-1 border-2 border-on-surface/40 rounded-lg py-2 px-3 font-handwritten text-xl flex items-center justify-center gap-2 rotate-1 hover:bg-surface-variant transition-colors">
+                <span class="material-symbols-outlined text-xl" data-icon="download">download</span>
+                Download SVG
+            </button>
+        </div>
+
+        <div class="relative mb-12 w-full">
+            <div id="mermaid-render"
+                class="sketch-border bg-white h-[600px] w-full flex flex-col items-center justify-center p-8 -rotate-1 shadow-inner relative overflow-hidden text-sm">
+                <div class="absolute inset-0 opacity-[0.03]"></div>
+                <div class="flex flex-col items-center opacity-40 py-20">
+                    <span class="material-symbols-outlined text-6xl mb-2" data-icon="edit">edit</span>
+                    <p class="font-handwritten text-2xl">Your architecture will render here...</p>
+                </div>
+            </div>
+            <div class="absolute -top-4 -right-4 text-secondary rotate-12">
+                <span class="material-symbols-outlined text-3xl" data-icon="flare">flare</span>
+            </div>
+        </div>
+
+        <div class="mb-20 explanation-panel" id="exp-panel" style="display:none;">
+            <div id="exp-header"
+                class="sketch-border p-4 bg-surface-container-low flex items-center justify-between cursor-pointer rotate-1">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🤖</span>
+                    <h3 class="font-handwritten text-2xl font-bold">Architecture Insights</h3>
+                </div>
+                <span class="material-symbols-outlined" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+            </div>
+            <div id="exp-content"
+                class="p-8 font-handwritten text-xl text-on-surface-variant border-x border-b border-dashed border-outline-variant mt-[-2px] mx-2 bg-surface/50 rounded-b-lg whitespace-pre-wrap leading-relaxed shadow-sm">
+            </div>
+        </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
