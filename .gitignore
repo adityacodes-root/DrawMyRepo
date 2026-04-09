@@ -7,3 +7,6 @@ cache.db
 .terraform/
 *.tar.gz
 *.tfvars
+terraform/
+*.tf
+*.hcl
