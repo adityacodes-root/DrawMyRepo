@@ -21,7 +21,8 @@ Requirements:
 - Be concrete and repo-specific.
 - Identify the main subsystems, data flows, and important boundaries.
 - Mention relevant technologies, runtimes, tooling, infrastructure, or external services only when they materially affect the architecture.
-- Keep the explanation concise and high-signal. Prefer 8-16 short sections or paragraphs over a long essay.
+- Provide a high-quality explanation but STRICTLY LIMIT the text to 3-4 short paragraphs to minimize generation latency. Keep it crisp, summarizing only the most vital design patterns and connections.
+- Use **bold text** frequently to highlight all main points and key takeaways so they can be easily scanned.
 - Do not assume the project is a web app. It could be any repo type.
 """
 
@@ -146,7 +147,7 @@ def generate_mermaid_and_explanation(repo_data: dict, base_url: str, branch: str
     
     mode_prompt = ""
     if mode == "simple":
-        mode_prompt = "Produce a very high-level graph suitable for a beginner or non-technical stakeholder. Focus only on the most critical components. Fewer than 10 nodes if possible."
+        mode_prompt = "CRITICAL OVERRIDE: Forget you are an engineer. You are a teacher explaining a concept to a middle school student. You MUST produce an extremely basic, conceptual overview. IGNORE ALL previous rules about nodes and technical details. You are strictly limited to 3 to 5 nodes MAXIMUM. DO NOT use technical jargon (e.g., APIs, databases, servers). Use simple metaphors if helpful. Exclude minor details, files, and interfaces entirely."
     elif mode == "technical":
         mode_prompt = "Produce an extremely detailed technical graph for a senior engineer. Include major interfaces, specific databases, file system details, and exact technologies used."
 
@@ -203,3 +204,38 @@ RETURN EXACTLY ONLY RAW JSON MATCHING THE SCHEMA. NO MARKDOWN. NO BACKTICKS.
         "mermaid_code": mermaid_out,
         "explanation": graph_data.get("_explanation", "No explanation generated.")
     }
+
+def chat_about_repo(context_json_str: str, chat_history: list[dict], user_message: str) -> str:
+    if not API_KEY:
+        raise Exception("GEMINI_API_KEY environment variable is not set.")
+    
+    repo_data = json.loads(context_json_str)
+    
+    system_prompt = f"""You are a helpful software engineer answering questions about a repository.
+You have the following context about the repository:
+
+<repo_name>{repo_data.get('repo_name', 'unknown')}</repo_name>
+
+<file_tree>
+{repo_data.get('file_tree', '')}
+</file_tree>
+
+<config_context>
+{repo_data.get('config_context', '')}
+</config_context>
+
+<readme>
+{repo_data.get('readme', '')}
+</readme>
+
+Answer the user's questions clearly, concisely, and accurately based on the provided context."""
+
+    model = genai.GenerativeModel('gemini-2.5-flash-lite', system_instruction=system_prompt)
+    
+    formatted_history = []
+    for msg in chat_history:
+        formatted_history.append({"role": "model" if msg["role"] == "assistant" else "user", "parts": [msg["content"]]})
+        
+    chat = model.start_chat(history=formatted_history)
+    response = chat.send_message(user_message)
+    return response.text

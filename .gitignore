@@ -2,3 +2,8 @@ __pycache__/
 .env
 cache.db
 .DS_Store
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tar.gz
+*.tfvars

@@ -1,4 +1,5 @@
 import os
+import json
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -9,7 +10,7 @@ import sqlite3
 
 from utils import clone_repo, cleanup_dir
 from analyzer import analyze_repo
-from gemini_client import generate_mermaid_and_explanation
+from gemini_client import generate_mermaid_and_explanation, chat_about_repo
 
 app = FastAPI()
 
@@ -25,6 +26,10 @@ def init_db():
             PRIMARY KEY (repo_url, mode)
         )
     ''')
+    try:
+        c.execute("ALTER TABLE analysis_cache ADD COLUMN context TEXT")
+    except sqlite3.OperationalError:
+        pass
     conn.commit()
     conn.close()
 
@@ -33,20 +38,23 @@ init_db()
 def get_from_cache(repo_url: str, mode: str):
     conn = sqlite3.connect("cache.db")
     c = conn.cursor()
-    c.execute("SELECT mermaid_code, explanation FROM analysis_cache WHERE repo_url = ? AND mode = ?", (repo_url, mode))
+    try:
+        c.execute("SELECT mermaid_code, explanation, context FROM analysis_cache WHERE repo_url = ? AND mode = ?", (repo_url, mode))
+    except sqlite3.OperationalError:
+        c.execute("SELECT mermaid_code, explanation FROM analysis_cache WHERE repo_url = ? AND mode = ?", (repo_url, mode))
     row = c.fetchone()
     conn.close()
     if row:
-        return {"mermaid_code": row[0], "explanation": row[1]}
+        return {"mermaid_code": row[0], "explanation": row[1], "context": row[2] if len(row) > 2 else None}
     return None
 
-def save_to_cache(repo_url: str, mode: str, mermaid_code: str, explanation: str):
+def save_to_cache(repo_url: str, mode: str, mermaid_code: str, explanation: str, context: str = None):
     conn = sqlite3.connect("cache.db")
     c = conn.cursor()
     c.execute('''
-        INSERT OR REPLACE INTO analysis_cache (repo_url, mode, mermaid_code, explanation)
-        VALUES (?, ?, ?, ?)
-    ''', (repo_url, mode, mermaid_code, explanation))
+        INSERT OR REPLACE INTO analysis_cache (repo_url, mode, mermaid_code, explanation, context)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (repo_url, mode, mermaid_code, explanation, context))
     conn.commit()
     conn.close()
 
@@ -70,6 +78,19 @@ class HistoryItem(BaseModel):
     repo_url: str
     mode: str
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    repo_url: str
+    mode: str = "default"
+    history: list[ChatMessage] = []
+    message: str
+
+class ChatResponse(BaseModel):
+    reply: str
+
 @app.get("/history", response_model=list[HistoryItem])
 def history_endpoint():
     conn = sqlite3.connect("cache.db")
@@ -85,7 +106,7 @@ def analyze_endpoint(request: AnalyzeRequest):
         raise HTTPException(status_code=400, detail="Invalid repository URL")
 
     cached = get_from_cache(request.repo_url, request.mode)
-    if cached:
+    if cached and cached.get("context"):
         return AnalyzeResponse(
             mermaid_code=cached["mermaid_code"],
             explanation=cached["explanation"]
@@ -101,7 +122,8 @@ def analyze_endpoint(request: AnalyzeRequest):
             
         result = generate_mermaid_and_explanation(json_data, base_url, branch, request.mode)
         
-        save_to_cache(request.repo_url, request.mode, result["mermaid_code"], result["explanation"])
+        context_str = json.dumps(json_data)
+        save_to_cache(request.repo_url, request.mode, result["mermaid_code"], result["explanation"], context_str)
         
         return AnalyzeResponse(
             mermaid_code=result["mermaid_code"],
@@ -113,4 +135,16 @@ def analyze_endpoint(request: AnalyzeRequest):
     finally:
         if temp_dir:
             cleanup_dir(temp_dir)
+
+@app.post("/chat", response_model=ChatResponse)
+def chat_endpoint(request: ChatRequest):
+    cached = get_from_cache(request.repo_url, request.mode)
+    if not cached or not getattr(cached, "context", None) and not cached.get("context"):
+        raise HTTPException(status_code=404, detail="Repository context not found. Please analyze the repository again to enable chat.")
+    
+    try:
+        reply = chat_about_repo(cached["context"], [{"role": m.role, "content": m.content} for m in request.history], request.message)
+        return ChatResponse(reply=reply)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 

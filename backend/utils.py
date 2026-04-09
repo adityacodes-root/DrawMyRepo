@@ -4,7 +4,6 @@ import os
 import tempfile
 
 def parse_repo_url(url: str):
-    """Extracts base url, branch, and subpath from a GitHub URL."""
     url = url.rstrip("/")
     if "github.com/" in url:
         parts = url.split("github.com/")[1].split("/")
@@ -13,25 +12,22 @@ def parse_repo_url(url: str):
             branch = parts[3]
             subpath = "/".join(parts[4:])
             return base_url, branch, subpath
-    return url, "master", "" # fallback to master if not specified
+    return url, "master", ""
 
 def clone_repo(repo_url: str) -> tuple[str, str, str, str]:
-    """Returns (temp_dir, actual_path_to_analyze, base_url, branch)"""
     base_url, branch, subpath = parse_repo_url(repo_url)
     
     temp_dir = tempfile.mkdtemp(prefix="repo_vis_")
     try:
         cmd = ["git", "clone", "--depth", "1"]
-        # Only try to specify branch if it was explicitly parsed from a /tree/ url
         if branch != "master" and "tree" in repo_url:
             cmd.extend(["--branch", branch])
         cmd.extend([base_url, temp_dir])
         subprocess.run(cmd, check=True, capture_output=True, text=True)
         
         target_dir = os.path.join(temp_dir, subpath)
-        # Verify target dir exists
         if not os.path.exists(target_dir):
-            target_dir = temp_dir # fallback safely
+            target_dir = temp_dir
             
         return temp_dir, target_dir, base_url, branch
     except subprocess.CalledProcessError as e:
@@ -39,6 +35,5 @@ def clone_repo(repo_url: str) -> tuple[str, str, str, str]:
         raise Exception(f"Git clone failed: {e.stderr}")
 
 def cleanup_dir(dir_path: str):
-    """Deletes a directory and its contents."""
     if os.path.exists(dir_path):
         shutil.rmtree(dir_path, ignore_errors=True)

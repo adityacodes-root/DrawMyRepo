@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8010:8010"
+    volumes:
+      - ./backend/cache.db:/app/cache.db
+      - ./backend/.env:/app/.env
+    restart: always
+
+  frontend:
+    image: python:3.10-slim
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    command: python -m http.server 8080
+    ports:
+      - "8080:8080"
+      - "80:8080"
+    restart: always
